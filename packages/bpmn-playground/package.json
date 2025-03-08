@@ -10,11 +10,15 @@
 		"play": "ts-node ./src/play.ts"
 	},
 	"devDependencies": {
+		"@types/bpmn-moddle": "^5.1.11",
 		"@types/node": "20.14.8",
 		"eslint-config-custom": "workspace:*",
 		"prettier": "3.5.3",
 		"ts-node": "^10.9.2",
 		"tsconfig": "workspace:*",
 		"typescript": "^5.8.2"
+	},
+	"dependencies": {
+		"bpmn-moddle": "^9.0.1"
 	}
 }
