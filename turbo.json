@@ -1,0 +1,38 @@
+{
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "dev": {
+      "cache": false
+    },
+    "start": {
+      "dependsOn": ["^build"]
+    },
+    "dist": {
+      "dependsOn": ["^dist"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "build-storybook": {
+      "dependsOn": ["^build-storybook"]
+    },
+    "build:dev:cf": {
+      "dependsOn": ["^build:dev:cf"]
+    },
+    "build:prod:cf": {
+      "dependsOn": ["^build:prod:cf"]
+    },
+    "build:int": {
+      "dependsOn": ["^build", "^build:int"]
+    },
+    "build:prod": {
+      "dependsOn": ["^build", "^build:prod"]
+    }
+  }
+}

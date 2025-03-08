@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Shared Types",
+  "compilerOptions": {
+    "sourceMap": true,
+    "module": "commonjs",
+    "target": "ESNext",
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "types": [],
+    "esModuleInterop": true,
+    "declaration": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

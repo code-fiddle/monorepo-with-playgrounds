@@ -1,0 +1,20 @@
+{
+	"name": "@urbanisierung/bpmn-playground",
+	"version": "0.0.1",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"play": "ts-node ./src/play.ts"
+	},
+	"devDependencies": {
+		"@types/node": "20.14.8",
+		"eslint-config-custom": "workspace:*",
+		"prettier": "3.5.3",
+		"ts-node": "^10.9.2",
+		"tsconfig": "workspace:*",
+		"typescript": "^5.8.2"
+	}
+}
