@@ -30,51 +30,95 @@ async function parseBpmn(options: { path: string }) {
 	return parsedBpmn
 }
 
-function generateBpmnNetworkPlan(
+function getUniqueNodeIds(
 	references: BpmnReferenceElement[],
 ): BpmnNetworkPlan[] {
-	const networkPlan: BpmnNetworkPlan[] = []
-
+	const uniqueNodeIds = new Set<string>()
+	const nameMap = new Map<string, string>()
 	for (const reference of references) {
-		let foundElement = networkPlan.find(
-			(element) => element.nodeId === reference.element.id,
-		)
-		if (!foundElement) {
-			foundElement = {
-				nodeId: reference.element.id,
-				name: reference.element.name,
-				outgoingNodeIds: [],
-			}
-			networkPlan.push(foundElement)
-		}
-		let foundOutgoingElement: any
+		uniqueNodeIds.add(reference.element.id)
+		nameMap.set(reference.element.id, reference.element.name ?? '')
+	}
+	const nodeIdArray = Array.from(uniqueNodeIds)
+	const networkPlan: BpmnNetworkPlan[] = nodeIdArray.map((id) => ({
+		nodeId: id,
+		name: nameMap.get(id),
+		outgoingNodeIds: [],
+	}))
+	return networkPlan
+}
+
+function getOutgoingNodeIds(
+	references: BpmnReferenceElement[],
+	nodeId: string,
+): string[] {
+	const outgoingNodeIds = new Set<string>()
+	for (const reference of references) {
+		let foundElementId = ''
 		switch (reference.property) {
+			case 'bpmn:outgoing':
+				if (reference.element.id === nodeId) {
+					foundElementId = reference.element.id
+				}
+				break
 			case 'bpmn:incoming':
 				// ignore
 				break
-			case 'bpmn:outgoing':
-				foundOutgoingElement = references.find(
-					(reference) => reference.id === foundElement.nodeId,
-				)
-				if (foundOutgoingElement) {
-					foundElement.outgoingNodeIds.push(foundOutgoingElement.element.id)
-				}
-				break
 			case 'bpmn:sourceRef':
-				// ignore
+				if (reference.id === nodeId) {
+					foundElementId = reference.element.id
+				}
 				break
 			case 'bpmn:targetRef':
-				foundOutgoingElement = references.find(
-					(reference) => reference.id === foundElement.nodeId,
-				)
-				if (foundOutgoingElement) {
-					foundElement.outgoingNodeIds.push(foundOutgoingElement.element.id)
+				if (reference.element.id === nodeId) {
+					foundElementId = reference.id
 				}
 				break
+			default:
+				break
 		}
+		if (foundElementId !== nodeId && foundElementId.length > 0) {
+			outgoingNodeIds.add(foundElementId)
+		}
+	}
+	return Array.from(outgoingNodeIds)
+}
+
+export function generateBpmnNetworkPlan(
+	references: BpmnReferenceElement[],
+): BpmnNetworkPlan[] {
+	const networkPlan: BpmnNetworkPlan[] = getUniqueNodeIds(references)
+
+	for (const node of networkPlan) {
+		node.outgoingNodeIds = getOutgoingNodeIds(references, node.nodeId)
 	}
 
 	return networkPlan
+}
+
+function getOutgoingNodes(
+	networkPlan: BpmnNetworkPlan[],
+	nodeId: string,
+): string[] {
+	return (
+		networkPlan.find((element) => element.nodeId === nodeId)?.outgoingNodeIds ||
+		[]
+	)
+}
+
+export function generateFlows(nodeId: string, networkPlan: BpmnNetworkPlan[]) {
+	const flows: string[][] = []
+
+	const outgoingNodes = getOutgoingNodes(networkPlan, nodeId)
+	console.log(outgoingNodes)
+	for (const outgoingNode of outgoingNodes) {
+		const flowsOfOutgoingNode = generateFlows(outgoingNode, networkPlan)
+		for (const flow of flowsOfOutgoingNode) {
+			flows.push([outgoingNode, ...flow])
+		}
+	}
+
+	return flows
 }
 
 async function main() {
@@ -84,14 +128,8 @@ async function main() {
 	console.log(
 		networkPlan.filter((element) => element.outgoingNodeIds.length > 0),
 	)
-	// console.log(
-	// 	(bpmn as any).rootElement.rootElements[0].flowElements[0]['$type'],
-	// )
-	// fs.writeFileSync(
-	// 	`${__dirname}/../assets/example.json`,
-	// 	JSON.stringify(bpmn, null, 2),
-	// )
-	// console.log(JSON.stringify(bpmn, null, 2))
+	// const flows = generateFlows(networkPlan[0].nodeId, networkPlan)
+	// console.log(flows)
 }
 
 main()
